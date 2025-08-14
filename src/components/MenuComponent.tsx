@@ -1,5 +1,91 @@
 import React, { useState, useEffect } from 'react';
-import { menuService, MenuItem } from '../lib/menuService';
+import { menuService, MenuItem, MenuItemOption } from '../lib/menuService';
+import { MenuUtils } from '../lib/menuUtils';
+
+const MenuItemCard: React.FC<{ item: MenuItem }> = ({ item }) => {
+  const [selectedOption, setSelectedOption] = useState<MenuItemOption | null>(
+    item.options ? item.options[0] : null
+  );
+
+  const currentPrice = selectedOption 
+    ? item.price + selectedOption.priceAdjustment 
+    : item.price;
+
+  // Debug logging for items with options
+  if (item.options && item.options.length > 0) {
+    console.log(`Item with options: ${item.productName}`, item.options);
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 transition-transform duration-300 hover:scale-105">
+      {/* Image Section */}
+      <div className="h-48 overflow-hidden">
+        <img 
+          src={MenuUtils.getMenuItemImageUrl(item)}
+          alt={item.productName}
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+          onError={(e) => {
+            // Fallback to a solid background with emoji if image fails
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              parent.innerHTML = `<div style="background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 50%, #FB923C 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">${MenuUtils.getMenuItemEmoji(item.productName, item.category)}</div>`;
+            }
+          }}
+        />
+      </div>
+      
+      {/* Content Section */}
+      <div className="p-6">
+        <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.productName}</h3>
+        <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">{item.description}</p>
+        
+        {/* Options Selection */}
+        {item.options && item.options.length > 0 && (
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-blue-200">
+            <p className="text-sm font-medium text-gray-700 mb-2">Choose Option:</p>
+            <div className="space-y-2">
+              {item.options.map((option, index) => (
+                <label key={index} className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name={`option-${item.id}`}
+                    value={option.name}
+                    checked={selectedOption?.name === option.name}
+                    onChange={() => setSelectedOption(option)}
+                    className="mr-2 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700 flex-1">
+                    {option.name}
+                    {option.priceAdjustment !== 0 && (
+                      <span className="text-green-600 font-medium ml-1">
+                        {option.priceAdjustment > 0 ? ' (+₹' : ' (-₹'}
+                        {Math.abs(option.priceAdjustment)})
+                      </span>
+                    )}
+                  </span>
+                </label>
+              ))}
+            </div>
+            {selectedOption && selectedOption.description && (
+              <p className="text-xs text-gray-500 mt-2 italic border-t border-gray-200 pt-2">
+                {selectedOption.description}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="flex justify-between items-center">
+          <span className="text-2xl font-bold text-green-600">₹{currentPrice}</span>
+          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+            {item.category}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MenuComponent: React.FC = () => {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -58,7 +144,7 @@ const MenuComponent: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold text-center mb-8">Krumb Kraft Menu</h1>
+      <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">Krumb Kraft Menu</h1>
       
       {/* Category Filter */}
       <div className="mb-8">
@@ -90,16 +176,7 @@ const MenuComponent: React.FC = () => {
             </h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {items.map(item => (
-                <div key={item.id} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.productName}</h3>
-                  <p className="text-gray-600 mb-4 text-sm leading-relaxed">{item.description}</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-2xl font-bold text-green-600">₹{item.price}</span>
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      {item.category}
-                    </span>
-                  </div>
-                </div>
+                <MenuItemCard key={item.id} item={item} />
               ))}
             </div>
           </div>
@@ -108,16 +185,7 @@ const MenuComponent: React.FC = () => {
         // Show filtered items
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredItems.map(item => (
-            <div key={item.id} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-              <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.productName}</h3>
-              <p className="text-gray-600 mb-4 text-sm leading-relaxed">{item.description}</p>
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold text-green-600">₹{item.price}</span>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  {item.category}
-                </span>
-              </div>
-            </div>
+            <MenuItemCard key={item.id} item={item} />
           ))}
         </div>
       )}

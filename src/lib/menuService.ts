@@ -1,12 +1,20 @@
 import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+
+export interface MenuItemOption {
+  name: string;
+  priceAdjustment: number; // Price difference from base price (can be negative)
+  description?: string;
+}
 
 export interface MenuItem {
   id?: string;
   productName: string;
   description: string;
-  price: number;
+  price: number; // Base price
   category: string;
+  imgurl?: string;
+  options?: MenuItemOption[]; // Variants like "100% Whole Wheat", "Regular", etc.
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -78,6 +86,74 @@ export class MenuService {
       }, { merge: true });
     } catch (error) {
       console.error('Error updating menu item:', error);
+      throw error;
+    }
+  }
+
+  async deleteMenuItem(id: string): Promise<void> {
+    try {
+      const docRef = doc(db, this.collectionName, id);
+      await deleteDoc(docRef);
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      throw error;
+    }
+  }
+
+  // Method to consolidate duplicate items into one with options
+  async consolidateDuplicates(): Promise<void> {
+    try {
+      const allItems = await this.getAllMenuItems();
+      
+      // Define consolidation rules
+      const consolidationGroups = [
+        {
+          baseItem: 'Olive and rosemary sourdough bread',
+          duplicateItem: '100% Whole Wheat Olive Rosemary Sourdough Bread',
+          newName: 'Olive & Rosemary Sourdough Bread',
+          options: [
+            { name: 'Regular', priceAdjustment: 0, description: 'Classic sourdough bread with olives and rosemary' },
+            { name: '100% Whole Wheat', priceAdjustment: 50, description: 'Premium whole wheat version with olives and rosemary' }
+          ]
+        },
+        {
+          baseItem: 'Cranberry and walnut sourdough bread',
+          duplicateItem: '100% Whole Wheat Cranberry & Walnut Sourdough Bread',
+          newName: 'Cranberry & Walnut Sourdough Bread',
+          options: [
+            { name: 'Regular', priceAdjustment: 0, description: 'Classic sourdough with cranberries and walnuts' },
+            { name: '100% Whole Wheat', priceAdjustment: 35, description: 'Premium whole wheat version with cranberries and walnuts' }
+          ]
+        }
+      ];
+
+      for (const group of consolidationGroups) {
+        const baseItem = allItems.find(item => item.productName === group.baseItem);
+        const duplicateItem = allItems.find(item => item.productName === group.duplicateItem);
+
+        if (baseItem && duplicateItem) {
+          console.log(`Consolidating: ${group.baseItem} and ${group.duplicateItem}`);
+
+          // Update the base item with new name, options, and consolidated description
+          const updatedItem: Partial<MenuItem> = {
+            productName: group.newName,
+            options: group.options,
+            description: `${baseItem.description} Available in regular and 100% whole wheat options.`,
+            price: baseItem.price // Use the lower price as base
+          };
+
+          await this.updateMenuItem(baseItem.id!, updatedItem);
+          
+          // Delete the duplicate item
+          await this.deleteMenuItem(duplicateItem.id!);
+          
+          console.log(`✓ Consolidated ${group.newName}`);
+        }
+      }
+
+      console.log('Consolidation complete!');
+    } catch (error) {
+      console.error('Error consolidating duplicates:', error);
       throw error;
     }
   }

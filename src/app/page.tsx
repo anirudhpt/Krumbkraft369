@@ -40,23 +40,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Floating bakery elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
-          <div
-            key={i}
-            className={`absolute text-2xl opacity-10 animate-float ${isLoaded ? 'animate-bounce' : ''}`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${3 + Math.random() * 4}s`
-            }}
-          >
-            {['🥖', '🍞', '🥐', '🧁', '🍪'][Math.floor(Math.random() * 5)]}
-          </div>
-        ))}
-      </div>
+
       
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex items-center justify-center px-6">
