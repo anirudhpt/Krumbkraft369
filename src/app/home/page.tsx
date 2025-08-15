@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User } from '@/lib/userService';
+import { User, getUserByPhoneNumber } from '@/lib/userService';
 import { menuService, MenuItem, MenuItemOption } from '@/lib/menuService';
 import { MenuUtils } from '@/lib/menuUtils';
 import { generateWhatsAppLink } from '@/lib/phoneUtils';
@@ -20,6 +20,10 @@ export default function HomePage() {
   const [activeSection, setActiveSection] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
+  const [showPhonePrompt, setShowPhonePrompt] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -65,13 +69,58 @@ export default function HomePage() {
     try {
       const userData = localStorage.getItem('currentUser');
       if (!userData) {
-        router.push('/');
+        // No session data, show phone prompt fallback
+        setShowPhonePrompt(true);
+        setLoading(false);
         return;
       }
       const currentUser = JSON.parse(userData) as User;
       setUser(currentUser);
     } catch (error) {
       console.error('Error loading user data:', error);
+      // On error, also show phone prompt fallback
+      setShowPhonePrompt(true);
+      setLoading(false);
+    }
+  };
+
+  const handlePhoneSubmit = async () => {
+    if (!phoneNumber.trim()) {
+      setPhoneError('Please enter your phone number');
+      return;
+    }
+
+    // Basic phone validation (10 digits)
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+      setPhoneError('Please enter a valid 10-digit phone number');
+      return;
+    }
+
+    setPhoneLoading(true);
+    setPhoneError('');
+
+    try {
+      const userExists = await getUserByPhoneNumber(cleanPhone);
+      if (userExists) {
+        // User exists, save to localStorage and continue
+        localStorage.setItem('currentUser', JSON.stringify(userExists));
+        setUser(userExists);
+        setShowPhonePrompt(false);
+      } else {
+        setPhoneError('Phone number not found. Please register first or contact support.');
+      }
+    } catch (error) {
+      console.error('Error validating phone number:', error);
+      setPhoneError('Error validating phone number. Please try again.');
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handlePhoneKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handlePhoneSubmit();
     }
   };
 
@@ -143,23 +192,11 @@ export default function HomePage() {
   const sendWhatsAppOrder = () => {
     if (!user || cartItems.length === 0) return;
 
-    const orderDetails = cartItems.map(item => 
-      `${item.quantity}x ${item.productName} - ₹${item.price * item.quantity}`
-    ).join('\n');
-
-    const totalAmount = getTotalAmount();
-    const message = `🥖 *KrumbKraft Order*\n\n*Customer:* ${user.name}\n*Phone:* ${user.phoneNumber}\n\n*Items:*\n${orderDetails}\n\n*Total Amount:* ₹${totalAmount}\n\nPlease confirm this order. Thank you!`;
-
-    // Generate WhatsApp link to business number (you should set this in your env)
-    const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_WHATSAPP || '9876543210'; // Replace with actual business number
-    const whatsappLink = generateWhatsAppLink(businessPhone, message);
+    // Save cart items to localStorage for checkout page
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
     
-    // Open WhatsApp
-    window.open(whatsappLink, '_blank');
-    
-    // Clear cart after sending
-    setCartItems([]);
-    setShowCart(false);
+    // Navigate to checkout page
+    router.push('/checkout');
   };
 
   if (loading) {
@@ -184,8 +221,80 @@ export default function HomePage() {
     );
   }
 
-  if (!user) {
+  if (!user && !showPhonePrompt) {
     return null;
+  }
+
+  // Show phone prompt if no user session
+  if (showPhonePrompt) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 via-white to-orange-50/20"></div>
+        
+        <div className="w-full max-w-md mx-4 relative">
+          {/* Glassmorphism container */}
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-2xl"></div>
+          
+          <div className="relative z-10 p-8 sm:p-10">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-xl bg-gradient-to-br from-amber-600 to-orange-700">
+                <span className="text-2xl font-bold text-white">K</span>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome to KrumbKraft</h1>
+              <p className="text-gray-600">Please enter your phone number to continue</p>
+            </div>
+
+            {/* Phone Input */}
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onKeyPress={handlePhoneKeyPress}
+                  placeholder="Enter 10-digit phone number"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white/80 backdrop-blur-sm"
+                  disabled={phoneLoading}
+                />
+                {phoneError && (
+                  <p className="mt-2 text-sm text-red-600">{phoneError}</p>
+                )}
+              </div>
+
+              <button
+                onClick={handlePhoneSubmit}
+                disabled={phoneLoading}
+                className="w-full bg-gradient-to-r from-amber-600 to-orange-700 text-white py-3 px-4 rounded-xl font-medium hover:from-amber-700 hover:to-orange-800 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {phoneLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                    Verifying...
+                  </div>
+                ) : (
+                  'Continue'
+                )}
+              </button>
+
+              <div className="text-center">
+                <button
+                  onClick={() => router.push('/')}
+                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  ← Back to Login
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const categories = Array.from(new Set(menuItems.map(item => item.category)));
@@ -245,18 +354,8 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/nav:translate-x-[100%] transition-transform duration-700"></div>
                 
                 <div className="relative z-10 flex items-center space-x-1.5 sm:space-x-2">
-                  <svg className="w-4 h-4 transition-transform group-hover/nav:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0h7" />
-                  </svg>
-                  <span className="hidden sm:inline text-sm font-medium">Cart</span>
-                  <span className="text-xs font-medium bg-white/20 px-1.5 py-0.5 rounded-full">({cartItems.length})</span>
+                  <span className="text-sm font-medium">Cart ({cartItems.length})</span>
                 </div>
-                
-                {cartItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse font-bold z-20">
-                    {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-                  </span>
-                )}
               </button>
               
               <button
@@ -396,8 +495,7 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-700"></div>
                 
                 <div className="flex justify-between items-center relative z-10">
-                  <h3 className="text-xl sm:text-2xl font-bold text-white flex items-center">
-                    <span className="mr-2 sm:mr-3">🛒</span>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white">
                     Your Cart
                   </h3>
                   <button
@@ -412,7 +510,6 @@ export default function HomePage() {
               <div className="p-4 sm:p-6 overflow-y-auto max-h-60 sm:max-h-96">
                 {cartItems.length === 0 ? (
                   <div className="text-center py-8 sm:py-12">
-                    <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🛒</div>
                     <p className="font-medium text-base sm:text-lg text-gray-800">Your cart is empty</p>
                     <p className="text-sm mt-2 text-gray-600">Add some delicious items to get started!</p>
                   </div>
@@ -445,9 +542,9 @@ export default function HomePage() {
                             <span className="font-bold ml-1 sm:ml-4 min-w-[3rem] sm:min-w-[4rem] text-right text-sm sm:text-base text-gray-800">₹{item.price * item.quantity}</span>
                             <button
                               onClick={() => removeFromCart(item.id!)}
-                              className="hover:scale-110 ml-1 sm:ml-2 transition-all p-1 text-sm"
+                              className="hover:scale-110 ml-1 sm:ml-2 transition-all p-1 text-sm text-red-500 font-bold"
                             >
-                              🗑️
+                              Delete
                             </button>
                           </div>
                         </div>
@@ -474,8 +571,7 @@ export default function HomePage() {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700"></div>
                       
                       <span className="relative z-10 flex items-center">
-                        <span className="mr-2 sm:mr-3">📱</span>
-                        Order via WhatsApp
+                        Proceed to check out
                       </span>
                     </button>
                   </div>
@@ -567,34 +663,31 @@ function MenuItemCard({
   };
 
   return (
-    <div className="h-auto flex flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:transform hover:scale-105 shadow-lg hover:shadow-xl relative group">
-      {/* Glassmorphism background */}
-      <div className="absolute inset-0 bg-white/30 backdrop-blur-xl border border-white/20 rounded-2xl group-hover:bg-white/40 transition-all duration-300"></div>
-      
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-yellow-50/50 rounded-2xl opacity-80"></div>
-      
+    <div className="h-auto flex flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:transform hover:scale-105 shadow-lg hover:shadow-xl relative group bg-white">
       <div className="relative z-10 flex flex-col h-full">
-        {/* Product Image */}
-        <div className="flex justify-center relative overflow-hidden rounded-t-2xl h-40 sm:h-50">
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/50 to-amber-50/50 backdrop-blur-sm">
-            <img 
-              src={getPlaceholderImage(item)}
-              alt={item.productName}
-              className="w-full h-50 object-cover rounded-t-2xl transition-transform duration-300 group-hover:scale-110"
-              onError={(e) => {
-                // Fallback to emoji if image fails to load
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  parent.innerHTML = `<div style="background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 50%, #FB923C 100%); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 1rem 1rem 0 0;">
-                    <span style="font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">${getItemImage(item.productName, item.category, item.description || '')}</span>
-                  </div>`;
-                }
-              }}
-            />
-          </div>
+        {/* Product Image Section - Nike Style */}
+        <div className="relative overflow-hidden rounded-t-2xl h-48 sm:h-52 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500">
+          <img 
+            src={getPlaceholderImage(item)}
+            alt={item.productName}
+            className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+            style={{ 
+              transform: window.innerWidth <= 640 ? 'scale(1.1)' : 'scale(1)',
+              minHeight: '100%',
+              minWidth: '100%'
+            }}
+            onError={(e) => {
+              // Fallback to emoji if image fails to load
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              const parent = target.parentElement;
+              if (parent) {
+                parent.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                  <span style="font-size: 3rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">${getItemImage(item.productName, item.category, item.description || '')}</span>
+                </div>`;
+              }
+            }}
+          />
         </div>
         
         {/* Product Info */}
@@ -610,7 +703,7 @@ function MenuItemCard({
         {/* Options Selection */}
         {item.options && item.options.length > 0 && (
           <div className="px-2 pb-1 flex-shrink-0">
-            <div className="flex gap-1 justify-center">
+            <div className="flex gap-1 justify-center flex-wrap">
               {item.options.map((option, index) => (
                 <label key={index} className="cursor-pointer">
                   <input
@@ -621,14 +714,15 @@ function MenuItemCard({
                     onChange={() => setSelectedOption(option)}
                     className="sr-only"
                   />
-                  <span className={`inline-block text-xs px-2 py-1 rounded-full border transition-all duration-200 ${
+                  <span className={`inline-block text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border transition-all duration-200 ${
                     selectedOption?.name === option.name
                       ? 'bg-amber-600 text-white border-amber-600 shadow-md'
                       : 'bg-white/70 text-amber-800 border-amber-300 hover:bg-amber-50'
                   }`}>
-                    {option.name.replace('100% ', '')}
+                    <span className="hidden sm:inline">{option.name.replace('100% ', '')}</span>
+                    <span className="sm:hidden">{option.name.replace('100% Whole Wheat', 'WW').replace('100% ', '').replace('Whole Wheat', 'WW')}</span>
                     {option.priceAdjustment !== 0 && (
-                      <span className={`ml-1 font-medium ${
+                      <span className={`ml-0.5 sm:ml-1 font-medium text-xs ${
                         selectedOption?.name === option.name ? 'text-amber-100' : 'text-green-600'
                       }`}>
                         +₹{option.priceAdjustment}
@@ -643,33 +737,36 @@ function MenuItemCard({
         
         {/* Quantity Counter */}
         <div className="flex justify-between items-center p-2 mt-auto flex-shrink-0">
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-2">
             <button
               onClick={handleDecrement}
               disabled={quantity === 0}
-              className={`w-6 h-6 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-xs backdrop-blur-md border ${
+              className={`w-8 h-8 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-sm backdrop-blur-md border ${
                 quantity > 0 
-                  ? 'bg-white/60 border-amber-300 text-amber-800 hover:bg-white/80 hover:scale-110' 
+                  ? 'bg-white/60 border-amber-300 text-amber-800 hover:bg-white/80 hover:scale-110 active:scale-95' 
                   : 'bg-white/30 border-amber-200 text-amber-600 cursor-not-allowed opacity-50'
               }`}
             >
               -
             </button>
             
-            <span className="text-sm font-bold min-w-[1.5rem] text-center text-amber-900">
+            <span className="text-lg sm:text-base font-bold min-w-[.5rem] sm:min-w-[2rem] text-center text-amber-900">
               {quantity}
             </span>
             
             <button
               onClick={handleIncrement}
-              className="w-6 h-6 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-xs bg-white/60 backdrop-blur-md border border-amber-300 text-amber-800 hover:bg-white/80 hover:scale-110"
+              className="w-8 h-8 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-sm backdrop-blur-md border border-amber-300 text-amber-800 hover:bg-white/80 hover:scale-110 active:scale-95"
             >
               +
             </button>
           </div>
           
-          <div className="text-sm font-bold text-amber-900 bg-white/40 backdrop-blur-md px-2 py-1 rounded-lg border border-white/30">
-            ₹{currentPrice}
+          <div className="relative">
+            <div className="text-sm font-bold text-amber-900 bg-gradient-to-br from-amber-50 via-white to-amber-50 px-4 py-2 rounded-xl shadow-md border border-amber-200/50 backdrop-blur-sm">
+              <span className="text-xs text-amber-600 font-medium">₹</span>
+              <span className="ml-0.5">{currentPrice}</span>
+            </div>
           </div>
         </div>
       </div>

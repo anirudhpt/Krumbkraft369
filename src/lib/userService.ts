@@ -6,6 +6,7 @@ export interface User {
   phoneNumber: string;
   name?: string;
   email?: string;
+  address?: string;
   createdAt: Date;
   lastLogin: Date;
 }
@@ -41,6 +42,7 @@ export async function getUserByPhoneNumber(phoneNumber: string): Promise<User | 
       phoneNumber: userDoc.id, // Document ID is the phone number
       name: userData.Name || userData.name || '', // Check both Name and name fields
       email: userData.email || '',
+      address: userData.address || '',
       createdAt: userData.createdAt?.toDate() || new Date(),
       lastLogin: userData.lastLogin?.toDate() || new Date(),
     };
@@ -59,6 +61,7 @@ export async function createUser(phoneNumber: string, additionalData?: Partial<U
     const userData = {
       Name: additionalData?.name || '', // Use capital N to match your structure
       email: additionalData?.email || '',
+      address: additionalData?.address || '',
       createdAt: now,
       lastLogin: now,
     };
@@ -70,6 +73,7 @@ export async function createUser(phoneNumber: string, additionalData?: Partial<U
       phoneNumber: phoneNumber,
       name: userData.Name,
       email: userData.email,
+      address: userData.address,
       createdAt: now,
       lastLogin: now,
     };
@@ -103,6 +107,9 @@ export async function updateUserProfile(userId: string, updates: Partial<User>):
     if (updates.email !== undefined) {
       updateData.email = updates.email;
     }
+    if (updates.address !== undefined) {
+      updateData.address = updates.address;
+    }
     
     await setDoc(userRef, updateData, { merge: true });
     
@@ -118,6 +125,7 @@ export async function updateUserProfile(userId: string, updates: Partial<User>):
       phoneNumber: updatedDoc.id, // Document ID is phone number
       name: userData.Name || userData.name || '',
       email: userData.email || '',
+      address: userData.address || '',
       createdAt: userData.createdAt?.toDate() || new Date(),
       lastLogin: userData.lastLogin?.toDate() || new Date(),
     };

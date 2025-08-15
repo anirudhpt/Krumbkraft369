@@ -24,8 +24,13 @@ export default function RedirectPage() {
       setLoading(true);
       setError(null);
 
-      // Extract phone number from URL - use exact value
-      const phone = searchParams.get('phone') || extractPhoneFromUrl(window.location.href);
+      // Extract phone number from URL - prioritize search params to avoid hydration issues
+      let phone = searchParams.get('phone');
+      
+      // Only use window.location.href as fallback and ensure it runs client-side only
+      if (!phone && typeof window !== 'undefined') {
+        phone = extractPhoneFromUrl(window.location.href);
+      }
       
       if (!phone) {
         setError('No phone number found in URL');
@@ -58,7 +63,8 @@ export default function RedirectPage() {
           setIsNewUser(true);
         }
       } else {
-        // User doesn't exist - show new user form
+        // No document found in Firestore - automatically show registration form to create new record
+        console.log(`No user document found for phone: ${phone}. Showing registration form.`);
         setIsNewUser(true);
       }
     } catch (err) {
@@ -69,7 +75,7 @@ export default function RedirectPage() {
     }
   };
 
-  const handleCreateUser = async (name: string, email?: string) => {
+  const handleCreateUser = async (name: string, email?: string, address?: string) => {
     if (!phoneNumber) return;
 
     try {
@@ -79,10 +85,10 @@ export default function RedirectPage() {
       
       if (user && user.id) {
         // User exists but needs to update profile
-        updatedUser = await updateUserProfile(user.id, { name, email });
+        updatedUser = await updateUserProfile(user.id, { name, email, address });
       } else {
         // Create completely new user
-        updatedUser = await createUser(phoneNumber, { name, email });
+        updatedUser = await createUser(phoneNumber, { name, email, address });
       }
       
       setUser(updatedUser);
@@ -146,7 +152,7 @@ function NewUserForm({
   isExistingUser = false
 }: { 
   phoneNumber: string; 
-  onCreateUser: (name: string, email?: string) => void;
+  onCreateUser: (name: string, email?: string, address?: string) => void;
   isExistingUser?: boolean;
 }) {
   const [name, setName] = useState('');
@@ -162,7 +168,7 @@ function NewUserForm({
     }
 
     setIsSubmitting(true);
-    await onCreateUser(name.trim(), email.trim() || undefined);
+    await onCreateUser(name.trim(), email.trim() || undefined, ''); // Empty address for now
     setIsSubmitting(false);
   };
 
@@ -170,25 +176,14 @@ function NewUserForm({
     <div className="min-h-screen bg-gradient-to-br from-flour-50 via-sourdough-50 to-krumb-50 flex items-center justify-center p-6">
       <div className="absolute inset-0 bg-bread-texture opacity-30"></div>
       
-      <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-3xl shadow-large p-12 max-w-lg w-full border border-flour-200">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-krumb-400 to-krumb-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-warm">
-            <span className="text-3xl font-bold text-white">K</span>
+      <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-3xl shadow-large p-8 max-w-lg w-full border border-flour-200">
+        <div className="text-center mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <span className="text-2xl font-bold text-white">K</span>
           </div>
-          <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-krumb-600 to-crust-600 bg-clip-text mb-4 font-display">
-            {isExistingUser ? 'Complete Your Profile' : 'Welcome to KrumbKraft!'}
+          <h1 className="text-2xl font-bold text-sourdough-800 mb-4">
+            {isExistingUser ? 'Complete Your Profile' : 'Join KrumbKraft!'}
           </h1>
-          <div className="bg-sourdough-50 rounded-2xl p-6 mb-6 border border-sourdough-100">
-            <p className="text-sourdough-700 font-medium mb-2">
-              Phone: <span className="font-bold text-krumb-600">{phoneNumber}</span>
-            </p>
-            <p className="text-sourdough-600 text-sm">
-              {isExistingUser 
-                ? 'Please add your name to access our fresh bread selection' 
-                : 'Join our artisanal bread community and start your order'
-              }
-            </p>
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -221,10 +216,24 @@ function NewUserForm({
             />
           </div>
 
+          <div>
+            <label htmlFor="phone" className="block text-base font-semibold text-sourdough-800 mb-3">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              value={phoneNumber}
+              readOnly
+              className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl bg-gray-50/80 text-gray-600 cursor-not-allowed backdrop-blur-sm"
+              placeholder="Phone number"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-krumb-500 to-krumb-600 text-white py-4 px-8 rounded-2xl hover:from-krumb-600 hover:to-krumb-700 focus:outline-none focus:ring-4 focus:ring-krumb-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-warm hover:shadow-large transform hover:-translate-y-1 font-bold text-lg"
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-4 px-8 rounded-2xl hover:from-amber-600 hover:to-orange-700 focus:outline-none focus:ring-4 focus:ring-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-bold text-lg"
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center">
@@ -232,16 +241,10 @@ function NewUserForm({
                 Creating Account...
               </div>
             ) : (
-              'Start Browsing Fresh Breads'
+              'Join the Krumb Fam'
             )}
           </button>
         </form>
-        
-        <div className="mt-8 text-center">
-          <p className="text-sourdough-500 text-sm">
-            By continuing, you agree to receive updates about fresh bread availability
-          </p>
-        </div>
       </div>
     </div>
   );
