@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getUserByPhoneNumber, createUser, updateUserLastLogin, updateUserProfile, User } from '@/lib/userService';
 import { extractPhoneFromUrl, isValidPhoneNumber } from '@/lib/phoneUtils';
 
-export default function RedirectPage() {
+function RedirectContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
@@ -15,11 +15,7 @@ export default function RedirectPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  useEffect(() => {
-    handleRedirect();
-  }, []);
-
-  const handleRedirect = async () => {
+  const handleRedirect = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -73,7 +69,11 @@ export default function RedirectPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams, router]);
+
+  useEffect(() => {
+    handleRedirect();
+  }, [handleRedirect]);
 
   const handleCreateUser = async (name: string, email?: string, address?: string) => {
     if (!phoneNumber) return;
@@ -247,5 +247,13 @@ function NewUserForm({
         </form>
       </div>
     </div>
+  );
+}
+
+export default function RedirectPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+      <RedirectContent />
+    </Suspense>
   );
 }

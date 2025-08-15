@@ -642,7 +642,7 @@ export default function HomePage() {
               </div>
               
               <p className="text-gray-600 text-sm mb-6">
-                Clicking "Send Order" will open WhatsApp with your order details. You can review and send the message to complete your order.
+                Clicking &quot;Send Order&quot; will open WhatsApp with your order details. You can review and send the message to complete your order.
               </p>
               
               <div className="flex space-x-3">

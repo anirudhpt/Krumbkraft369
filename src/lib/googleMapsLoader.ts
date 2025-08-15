@@ -3,7 +3,7 @@
 
 declare global {
   interface Window {
-    google: any;
+    google: typeof google;
     googleMapsLoading?: boolean;
   }
 }
@@ -36,12 +36,12 @@ export const loadGoogleMapsScript = (): Promise<void> => {
       existingScript.addEventListener('load', () => {
         isLoaded = true;
         isLoading = false;
-        callbacks.forEach(callback => callback());
+        callbacks.forEach(cb => cb());
         callbacks.length = 0;
       });
       existingScript.addEventListener('error', () => {
         isLoading = false;
-        callbacks.forEach(callback => reject(new Error('Failed to load Google Maps')));
+        callbacks.forEach(() => reject(new Error('Failed to load Google Maps')));
         callbacks.length = 0;
       });
       return;
@@ -57,14 +57,14 @@ export const loadGoogleMapsScript = (): Promise<void> => {
     script.onload = () => {
       isLoaded = true;
       isLoading = false;
-      callbacks.forEach(callback => callback());
+      callbacks.forEach(cb => cb());
       callbacks.length = 0;
     };
     
     script.onerror = () => {
       isLoading = false;
       const error = new Error('Failed to load Google Maps API');
-      callbacks.forEach(callback => reject(error));
+      callbacks.forEach(() => reject(error));
       callbacks.length = 0;
     };
     
@@ -73,5 +73,5 @@ export const loadGoogleMapsScript = (): Promise<void> => {
 };
 
 export const isGoogleMapsLoaded = (): boolean => {
-  return isLoaded && window.google && window.google.maps;
+  return isLoaded && !!window.google && !!window.google.maps;
 };

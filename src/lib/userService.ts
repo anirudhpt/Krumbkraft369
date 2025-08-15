@@ -98,7 +98,7 @@ export async function updateUserLastLogin(userId: string): Promise<void> {
 export async function updateUserProfile(userId: string, updates: Partial<User>): Promise<User> {
   try {
     const userRef = doc(db, 'Krumblogin', userId);
-    const updateData: any = { lastLogin: new Date() };
+    const updateData: Record<string, unknown> = { lastLogin: new Date() };
     
     // Map name to Name field to match your structure
     if (updates.name !== undefined) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '@/lib/userService';
@@ -55,7 +55,7 @@ interface FinanceRecord {
     landmark?: string;
   };
   deliveryDate: string;
-  orderTimestamp: any; // Firebase serverTimestamp
+  orderTimestamp: unknown; // Firebase serverTimestamp
   paymentStatus: 'pending' | 'paid' | 'failed';
   orderStatus: 'placed' | 'out_for_delivery' | 'delivered';
   paymentMethod: 'whatsapp_order' | 'online' | 'cash_on_delivery';
@@ -70,7 +70,7 @@ interface OrderStatus {
   deliveryDate: string;
   deliveryAddress: string;
   totalAmount: number;
-  orderTimestamp: any; // Firebase serverTimestamp
+  orderTimestamp: unknown; // Firebase serverTimestamp
   statusHistory: {
     status: string;
     timestamp: string; // ISO string timestamp
@@ -80,11 +80,11 @@ interface OrderStatus {
 
 declare global {
   interface Window {
-    google: any;
+    google: typeof google;
   }
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const [user, setUser] = useState<User | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [autocomplete, setAutocomplete] = useState<any>(null);
+  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const router = useRouter();
@@ -165,7 +165,7 @@ export default function CheckoutPage() {
         let city = '';
         let pincode = '';
 
-        components?.forEach((component: any) => {
+        components?.forEach((component: google.maps.GeocoderAddressComponent) => {
           const types = component.types;
           if (types.includes('sublocality') || types.includes('neighborhood')) {
             area = component.long_name;
@@ -362,7 +362,15 @@ export default function CheckoutPage() {
         customerName: user.name,
         customerPhone: user.phoneNumber,
         items: cartItems.map(item => {
-          const itemData: any = {
+          const itemData: {
+            productName: string;
+            quantity: number;
+            unitPrice: number;
+            totalPrice: number;
+            category?: string;
+            productId?: string;
+            selectedOption?: { name: string; priceAdjustment: number; };
+          } = {
             productName: item.productName,
             quantity: item.quantity,
             unitPrice: item.price,
@@ -700,5 +708,13 @@ Please confirm this order. Thank you!`;
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

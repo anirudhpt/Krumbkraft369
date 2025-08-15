@@ -26,7 +26,6 @@ async function fetchAllMenuItems() {
     
     // Look for potential duplicates (similar product names)
     console.log('\n=== POTENTIAL DUPLICATES ===');
-    const productNames = items.map(item => item.productName.toLowerCase());
     const duplicates = items.filter((item, index) => {
       const baseName = item.productName.toLowerCase()
         .replace(/100%|whole wheat|white|regular/gi, '')

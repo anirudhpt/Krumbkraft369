@@ -12,7 +12,6 @@ export function generateBookingLink(
   customerPhone: string, 
   config: WhatsAppBookingConfig
 ): string {
-  const encodedUrl = encodeURIComponent(`${config.baseUrl}/redirect?phone=${customerPhone}`);
   const message = config.defaultMessage || 
     `Hi! Click this link to place your order: ${config.baseUrl}/redirect?phone=${customerPhone}`;
   
