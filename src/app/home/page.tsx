@@ -20,6 +20,7 @@ export default function HomePage() {
   const [activeSection, setActiveSection] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [showPhonePrompt, setShowPhonePrompt] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneLoading, setPhoneLoading] = useState(false);
@@ -191,12 +192,32 @@ export default function HomePage() {
 
   const sendWhatsAppOrder = () => {
     if (!user || cartItems.length === 0) return;
-
-    // Save cart items to localStorage for checkout page
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
     
-    // Navigate to checkout page
-    router.push('/checkout');
+    // Show confirmation modal first
+    setShowConfirmation(true);
+  };
+
+  const confirmAndSendOrder = () => {
+    if (!user || cartItems.length === 0) return;
+
+    const orderDetails = cartItems.map(item => 
+      `${item.quantity}x ${item.productName} - ₹${item.price * item.quantity}`
+    ).join('\n');
+
+    const totalAmount = getTotalAmount();
+    const message = `🥖 *KrumbKraft Order*\n\n*Customer:* ${user.name}\n*Phone:* ${user.phoneNumber}\n\n*Items:*\n${orderDetails}\n\n*Total Amount:* ₹${totalAmount}\n\nPlease confirm this order. Thank you!`;
+
+    // Generate WhatsApp link to business number
+    const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_WHATSAPP || '9876543210';
+    const whatsappLink = `https://wa.me/${businessPhone}?text=${encodeURIComponent(message)}`;
+    
+    // Open WhatsApp
+    window.open(whatsappLink, '_blank');
+    
+    // Clear cart and close modals
+    setCartItems([]);
+    setShowCart(false);
+    setShowConfirmation(false);
   };
 
   if (loading) {
@@ -577,6 +598,68 @@ export default function HomePage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl">
+            <div className="bg-gradient-to-br from-amber-700 to-amber-800 p-6 rounded-t-3xl">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold text-white flex items-center">
+                  <span className="mr-3">📋</span>
+                  Confirm Order
+                </h3>
+                <button
+                  onClick={() => setShowConfirmation(false)}
+                  className="text-white/80 hover:text-white text-2xl transition-colors bg-white/20 rounded-full w-8 h-8 flex items-center justify-center"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="mb-6">
+                <h4 className="font-bold text-gray-900 mb-2">Order Summary</h4>
+                <div className="space-y-2">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span>{item.quantity}x {item.productName}</span>
+                      <span className="font-medium">₹{item.price * item.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-gray-200 mt-3 pt-3">
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span className="text-amber-800">₹{getTotalAmount()}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-gray-600 text-sm mb-6">
+                Clicking "Send Order" will open WhatsApp with your order details. You can review and send the message to complete your order.
+              </p>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowConfirmation(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmAndSendOrder}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-medium transition-all duration-200 shadow-lg flex items-center justify-center"
+                >
+                  <span className="mr-2">📱</span>
+                  Send Order
+                </button>
+              </div>
             </div>
           </div>
         </div>
