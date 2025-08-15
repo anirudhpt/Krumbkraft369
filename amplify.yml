@@ -3,8 +3,9 @@ frontend:
   phases:
     preBuild:
       commands:
-        - nvm install 20.15.1
-        - nvm use 20.15.1
+        - nvm use 20
+        - node --version
+        - npm --version
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
