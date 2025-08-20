@@ -71,3 +71,74 @@ export function generateBookingQRData(customerPhone: string): string {
   
   return generateCustomerBookingUrl(customerPhone, config.baseUrl);
 }
+
+// Generate order confirmation message for customer
+export function generateOrderConfirmationMessage(
+  orderId: string,
+  customerName: string,
+  orderItems: Array<{
+    productName: string;
+    quantity: number;
+    price: number;
+    selectedOption?: { name: string; priceAdjustment: number };
+  }>,
+  totalAmount: number,
+  deliveryDate: string,
+  deliveryAddress: string
+): string {
+  const itemsList = orderItems.map(item => 
+    `${item.quantity}x ${item.productName}${item.selectedOption ? ` (${item.selectedOption.name})` : ''} - ₹${item.price * item.quantity}`
+  ).join('\n');
+
+  return `🥖 *KrumbKraft Order Confirmation*
+
+Hi ${customerName}! 👋
+
+Your order has been successfully placed!
+
+*Order ID:* ${orderId}
+*Delivery Date:* ${deliveryDate}
+
+*Your Order:*
+${itemsList}
+
+*Total Amount:* ₹${totalAmount}
+
+*Delivery Address:*
+${deliveryAddress}
+
+*Order Status:* Confirmed ✅
+*Expected Delivery:* ${deliveryDate}
+
+Thank you for choosing KrumbKraft! 🍞
+We'll keep you updated on your order status.
+
+For any queries, feel free to contact us.`;
+}
+
+// Send order confirmation to customer via WhatsApp
+export function sendOrderConfirmationToCustomer(
+  customerPhone: string,
+  orderId: string,
+  customerName: string,
+  orderItems: Array<{
+    productName: string;
+    quantity: number;
+    price: number;
+    selectedOption?: { name: string; priceAdjustment: number };
+  }>,
+  totalAmount: number,
+  deliveryDate: string,
+  deliveryAddress: string
+): string {
+  const message = generateOrderConfirmationMessage(
+    orderId,
+    customerName,
+    orderItems,
+    totalAmount,
+    deliveryDate,
+    deliveryAddress
+  );
+  
+  return generateWhatsAppLink(customerPhone, message);
+}

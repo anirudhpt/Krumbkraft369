@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '@/lib/userService';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { generateWhatsAppLink } from '@/lib/phoneUtils';
+import { sendOrderConfirmationToCustomer } from '@/lib/whatsappUtils';
+import { webhookService } from '@/lib/webhookService';
 import { loadGoogleMapsScript, isGoogleMapsLoaded } from '@/lib/googleMapsLoader';
 
 interface CartItem {
@@ -100,6 +102,12 @@ function CheckoutContent() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showOrderSuccess, setShowOrderSuccess] = useState(false);
+  const [orderSuccessData, setOrderSuccessData] = useState<{
+    orderId: string;
+    businessWhatsappLink: string;
+    customerConfirmationLink: string;
+  } | null>(null);
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -344,8 +352,8 @@ function CheckoutContent() {
         ]
       };
 
-      await addDoc(collection(db, 'OrderStatus'), orderStatus);
-      console.log('Order status saved successfully:', orderId);
+      await setDoc(doc(db, 'OrderStatus', orderId), orderStatus);
+      console.log('Order status saved successfully with document ID:', orderId);
     } catch (error) {
       console.error('Error saving order status:', error);
       throw error;
@@ -396,8 +404,8 @@ function CheckoutContent() {
         paymentMethod: 'whatsapp_order'
       };
 
-      await addDoc(collection(db, 'FinanceRecords'), financeRecord);
-      console.log('Finance record saved successfully:', orderId);
+      await setDoc(doc(db, 'FinanceRecords', orderId), financeRecord);
+      console.log('Finance record saved successfully with document ID:', orderId);
     } catch (error) {
       console.error('Error saving finance record:', error);
       throw error; // Re-throw to handle in calling function
@@ -423,13 +431,53 @@ function CheckoutContent() {
         saveFinanceRecord(orderId, uuid)
       ]);
 
-      // Create order details for WhatsApp
+      // Clear cart first
+      localStorage.removeItem('cartItems');
+
+      // Trigger webhook for n8n automation (WhatsApp, email, etc.)
+      try {
+        const webhookResponse = await fetch('/api/webhook', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'order_placed',
+            orderId,
+            uuid,
+            customerName: user?.name || 'Customer',
+            customerPhone: user?.phoneNumber || '',
+            orderItems: cartItems.map(item => ({
+              productName: item.productName,
+              quantity: item.quantity,
+              price: item.price,
+              selectedOption: item.selectedOption
+            })),
+            totalAmount: getTotalAmount(),
+            deliveryDate,
+            deliveryAddress: {
+              fullAddress: selectedAddress.fullAddress,
+              area: selectedAddress.area,
+              city: selectedAddress.city,
+              pincode: selectedAddress.pincode,
+              landmark: selectedAddress.landmark
+            }
+          })
+        });
+
+        const webhookResult = await webhookResponse.json();
+        console.log('Webhook triggered:', webhookResult);
+      } catch (webhookError) {
+        console.warn('Webhook failed (order still successful):', webhookError);
+      }
+
+      // Generate fallback WhatsApp links (in case webhook fails)
       const orderDetails = cartItems.map(item => 
         `${item.quantity}x ${item.productName}${item.selectedOption ? ` (${item.selectedOption.name})` : ''} - ₹${item.price * item.quantity}`
       ).join('\n');
 
       const totalAmount = getTotalAmount();
-      const message = `🥖 *KrumbKraft Order*
+      const businessMessage = `🥖 *KrumbKraft Order*
 
 *Order ID:* ${orderId}
 *Customer:* ${user?.name}
@@ -451,16 +499,31 @@ You can track your order using Order ID: ${orderId}
 
 Please confirm this order. Thank you!`;
 
-      // Generate WhatsApp link
       const businessPhone = process.env.NEXT_PUBLIC_BUSINESS_WHATSAPP || '9876543210';
-      const whatsappLink = generateWhatsAppLink(businessPhone, message);
+      const businessWhatsappLink = generateWhatsAppLink(businessPhone, businessMessage);
       
-      // Clear cart and redirect
-      localStorage.removeItem('cartItems');
-      window.open(whatsappLink, '_blank');
-      
-      // Show success message with order ID
-      alert(`Order placed successfully!\n\nOrder ID: ${orderId}\n\nYou can use this Order ID to track your delivery.\nYou will be redirected to WhatsApp to complete the order.`);
+      const customerConfirmationLink = sendOrderConfirmationToCustomer(
+        user?.phoneNumber || '',
+        orderId,
+        user?.name || 'Customer',
+        cartItems.map(item => ({
+          productName: item.productName,
+          quantity: item.quantity,
+          price: item.price,
+          selectedOption: item.selectedOption
+        })),
+        totalAmount,
+        deliveryDate,
+        `${selectedAddress.fullAddress}${selectedAddress.landmark ? `\nLandmark: ${selectedAddress.landmark}` : ''}`
+      );
+
+      // Set order success data and show modal
+      setOrderSuccessData({
+        orderId,
+        businessWhatsappLink,
+        customerConfirmationLink
+      });
+      setShowOrderSuccess(true);
       
       // Redirect to home after a short delay
       setTimeout(() => {
@@ -707,6 +770,83 @@ Please confirm this order. Thank you!`;
           </button>
         </div>
       </div>
+
+      {/* Order Success Modal */}
+      {showOrderSuccess && orderSuccessData && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl">
+            <div className="bg-gradient-to-br from-green-600 to-green-700 p-6 rounded-t-3xl">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">✅</span>
+                </div>
+                <h3 className="text-xl font-bold text-white">
+                  Order Placed Successfully!
+                </h3>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <p className="text-gray-600 mb-2">Your order has been confirmed</p>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                  <p className="font-bold text-amber-800">Order ID: {orderSuccessData.orderId}</p>
+                  <p className="text-sm text-amber-700">Save this ID to track your order</p>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-green-700">
+                    📱 Automated notifications have been sent via our system.
+                    <br />
+                    You may also use the manual options below if needed.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    window.open(orderSuccessData.businessWhatsappLink, '_blank');
+                  }}
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-white py-3 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg hover:from-amber-600 hover:to-amber-700 flex items-center justify-center"
+                >
+                  <span className="mr-2">🏪</span>
+                  Send to Business (Backup)
+                </button>
+
+                {user?.phoneNumber && (
+                  <button
+                    onClick={() => {
+                      window.open(orderSuccessData.customerConfirmationLink, '_blank');
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl font-medium transition-all duration-300 shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 flex items-center justify-center"
+                  >
+                    <span className="mr-2">💬</span>
+                    Get Manual Confirmation
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    setShowOrderSuccess(false);
+                    router.push('/home');
+                  }}
+                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-medium transition-all duration-300 hover:bg-gray-200"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+
+              <div className="mt-4 text-center">
+                <p className="text-xs text-gray-500">
+                  Notifications are sent automatically via our webhook system.
+                  <br />
+                  Manual options above are available as backup.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
