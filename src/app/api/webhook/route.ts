@@ -35,14 +35,15 @@ export async function POST(request: NextRequest) {
       data: result 
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Webhook trigger error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to trigger webhook';
     
     // Don't fail the order if webhook fails
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message || 'Failed to trigger webhook',
+        error: errorMessage,
         warning: 'Order was placed successfully but notification webhook failed'
       },
       { status: 200 } // Return 200 so order placement doesn't fail

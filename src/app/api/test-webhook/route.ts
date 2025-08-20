@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { webhookService } from '@/lib/webhookService';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('Testing webhook from API endpoint...');
     
@@ -45,12 +45,13 @@ export async function GET(request: NextRequest) {
       testOrderData
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Test webhook error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message,
+        error: errorMessage,
         message: 'Test webhook failed'
       },
       { status: 500 }

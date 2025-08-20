@@ -43,7 +43,7 @@ class WhatsAppApiService {
     return `https://graph.facebook.com/${this.config.apiVersion}/${this.config.phoneNumberId}/messages`;
   }
 
-  async sendMessage(message: WhatsAppMessage): Promise<any> {
+  async sendMessage(message: WhatsAppMessage): Promise<unknown> {
     try {
       const response = await fetch(this.getApiUrl(), {
         method: 'POST',
@@ -66,7 +66,7 @@ class WhatsAppApiService {
     }
   }
 
-  async sendTemplateMessage(to: string, templateName: string, languageCode: string = 'en_US'): Promise<any> {
+  async sendTemplateMessage(to: string, templateName: string, languageCode: string = 'en_US'): Promise<unknown> {
     const message: WhatsAppMessage = {
       messaging_product: 'whatsapp',
       to: to,
@@ -82,7 +82,7 @@ class WhatsAppApiService {
     return this.sendMessage(message);
   }
 
-  async sendTextMessage(to: string, text: string): Promise<any> {
+  async sendTextMessage(to: string, text: string): Promise<unknown> {
     const message: WhatsAppMessage = {
       messaging_product: 'whatsapp',
       to: to,
@@ -108,7 +108,7 @@ class WhatsAppApiService {
     totalAmount: number,
     deliveryDate: string,
     deliveryAddress: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     const itemsList = orderItems.map(item => 
       `${item.quantity}x ${item.productName}${item.selectedOption ? ` (${item.selectedOption.name})` : ''} - ₹${item.price * item.quantity}`
     ).join('\n');
@@ -159,7 +159,7 @@ For any queries, feel free to contact us.`;
     totalAmount: number,
     deliveryDate: string,
     deliveryAddress: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     const orderDetails = orderItems.map(item => 
       `${item.quantity}x ${item.productName}${item.selectedOption ? ` (${item.selectedOption.name})` : ''} - ₹${item.price * item.quantity}`
     ).join('\n');
