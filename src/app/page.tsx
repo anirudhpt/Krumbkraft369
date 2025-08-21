@@ -22,20 +22,33 @@ function HomeContent() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-krumb-50 via-krumb-100 to-krumb-200 relative overflow-hidden">
       {/* Navigation */}
       <nav className="absolute top-0 left-0 right-0 z-50 p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-amber-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">K</span>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
+              <img 
+                src="/images/KrumbKraft_Logo-01-min.png" 
+                alt="KrumbKraft Logo" 
+                className="w-12 h-12 object-contain rounded-xl"
+                onError={(e) => {
+                  // Fallback to text if logo fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<span class="text-krumb-600 font-bold text-lg">K</span>';
+                  }
+                }}
+              />
             </div>
-            <span className="text-amber-900 font-bold text-xl">KrumbKraft</span>
+            <span className="text-krumb-900 font-bold text-xl">KrumbKraft</span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#about" className="text-amber-800 hover:text-amber-600 transition-colors">About</a>
-            <a href="#products" className="text-amber-800 hover:text-amber-600 transition-colors">Products</a>
-            <a href="#contact" className="text-amber-800 hover:text-amber-600 transition-colors">Contact</a>
+            <a href="#about" className="text-krumb-800 hover:text-krumb-600 transition-colors">About</a>
+            <a href="#products" className="text-krumb-800 hover:text-krumb-600 transition-colors">Products</a>
+            <a href="#contact" className="text-krumb-800 hover:text-krumb-600 transition-colors">Contact</a>
           </div>
         </div>
       </nav>
@@ -49,28 +62,28 @@ function HomeContent() {
           {/* Left Content */}
           <div className={`text-center lg:text-left transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="inline-block mb-6">
-              <span className="bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-medium">
+              <span className="bg-krumb-100 text-krumb-800 px-4 py-2 rounded-full text-sm font-medium">
                 🔥 Fresh Daily Bakes
               </span>
             </div>
             
-            <h1 className="text-5xl lg:text-7xl font-bold text-amber-900 mb-6 leading-tight">
-              Artisanal
-              <span className="block text-transparent bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text">
-                Sourdough
+            <h1 className="text-5xl lg:text-7xl font-bold text-krumb-900 mb-6 leading-tight">
+              Fresh Sourdough
+              <span className="block text-transparent bg-gradient-to-r from-krumb-600 to-krumb-700 bg-clip-text">
+                Artisan Bakery
               </span>
-              <span className="block text-4xl lg:text-5xl text-amber-700">& Fresh Breads</span>
+              <span className="block text-4xl lg:text-5xl text-krumb-700">& Fresh Breads</span>
             </h1>
             
-            <p className="text-xl text-amber-700 mb-8 max-w-xl">
+            <p className="text-xl text-krumb-700 mb-8 max-w-xl">
               Experience the finest handcrafted sourdough breads, baked fresh daily with traditional techniques and premium ingredients.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-amber-700 hover:to-orange-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+              <button className="bg-gradient-to-r from-krumb-600 to-krumb-700 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-krumb-700 hover:to-krumb-800 transform hover:scale-105 transition-all duration-200 shadow-lg">
                 Order via WhatsApp
               </button>
-              <button className="border-2 border-amber-600 text-amber-600 px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-amber-50 transition-all duration-200">
+              <button className="border-2 border-krumb-600 text-krumb-600 px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-krumb-50 transition-all duration-200">
                 View Menu
               </button>
             </div>
@@ -81,14 +94,14 @@ function HomeContent() {
             <div className="relative">
               {/* Main bread showcase */}
               <div className="bg-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-200 to-orange-200 rounded-full -translate-y-16 translate-x-16"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-krumb-200 to-krumb-300 rounded-full -translate-y-16 translate-x-16"></div>
                 <div className="text-center">
                   <div className="text-8xl mb-4">🥖</div>
-                  <h3 className="text-2xl font-bold text-amber-900 mb-2">Classic Sourdough</h3>
-                  <p className="text-amber-700 mb-4">Traditional fermented for 24 hours</p>
+                  <h3 className="text-2xl font-bold text-krumb-900 mb-2">Classic Sourdough</h3>
+                  <p className="text-krumb-700 mb-4">Traditional fermented for 24 hours</p>
                   <div className="flex items-center justify-center space-x-2">
-                    <span className="text-2xl font-bold text-amber-600">₹180</span>
-                    <span className="text-sm text-amber-500 line-through">₹220</span>
+                    <span className="text-2xl font-bold text-krumb-600">₹180</span>
+                    <span className="text-sm text-krumb-500 line-through">₹220</span>
                   </div>
                 </div>
               </div>
@@ -96,12 +109,12 @@ function HomeContent() {
               {/* Floating cards */}
               <div className="absolute -top-4 -left-4 bg-white rounded-2xl p-4 shadow-lg animate-bounce">
                 <div className="text-3xl">🥐</div>
-                <p className="text-xs text-amber-800 mt-1">Croissant</p>
+                <p className="text-xs text-krumb-800 mt-1">Croissant</p>
               </div>
               
               <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl p-4 shadow-lg animate-bounce" style={{animationDelay: '1s'}}>
                 <div className="text-3xl">🧁</div>
-                <p className="text-xs text-amber-800 mt-1">Cupcake</p>
+                <p className="text-xs text-krumb-800 mt-1">Cupcake</p>
               </div>
             </div>
           </div>
@@ -112,19 +125,19 @@ function HomeContent() {
       <section id="about" className="py-20 px-6 bg-white/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-amber-900 mb-4">Why Choose KrumbKraft?</h2>
-            <p className="text-xl text-amber-700 max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold text-krumb-900 mb-4">Why Choose KrumbKraft?</h2>
+            <p className="text-xl text-krumb-700 max-w-2xl mx-auto">
               Our passion for authentic baking meets modern convenience
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center p-8 bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
-              <div className="w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-gradient-to-r from-krumb-500 to-krumb-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl">📱</span>
               </div>
-              <h3 className="text-xl font-semibold text-amber-900 mb-4">WhatsApp Ordering</h3>
-              <p className="text-amber-700 leading-relaxed">
+              <h3 className="text-xl font-semibold text-krumb-900 mb-4">WhatsApp Ordering</h3>
+              <p className="text-krumb-700 leading-relaxed">
                 Order seamlessly through WhatsApp with your personalized link. No app downloads needed.
               </p>
             </div>
@@ -133,8 +146,8 @@ function HomeContent() {
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl">🤖</span>
               </div>
-              <h3 className="text-xl font-semibold text-amber-900 mb-4">Smart Recognition</h3>
-              <p className="text-amber-700 leading-relaxed">
+              <h3 className="text-xl font-semibold text-krumb-900 mb-4">Smart Recognition</h3>
+              <p className="text-krumb-700 leading-relaxed">
                 Returning customers go straight to menu, new customers create quick profiles automatically.
               </p>
             </div>
@@ -143,8 +156,8 @@ function HomeContent() {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl">🚚</span>
               </div>
-              <h3 className="text-xl font-semibold text-amber-900 mb-4">Fresh Delivery</h3>
-              <p className="text-amber-700 leading-relaxed">
+              <h3 className="text-xl font-semibold text-krumb-900 mb-4">Fresh Delivery</h3>
+              <p className="text-krumb-700 leading-relaxed">
                 Daily fresh bakes delivered to your doorstep. Quality guaranteed from oven to your table.
               </p>
             </div>
@@ -156,8 +169,8 @@ function HomeContent() {
       <section id="products" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-amber-900 mb-4">Our Signature Bakes</h2>
-            <p className="text-xl text-amber-700">
+            <h2 className="text-4xl font-bold text-krumb-900 mb-4">Our Signature Bakes</h2>
+            <p className="text-xl text-krumb-700">
               Handcrafted with love, baked with tradition
             </p>
           </div>
@@ -172,11 +185,11 @@ function HomeContent() {
               <div key={index} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-105">
                 <div className="text-center">
                   <div className="text-6xl mb-4">{item.emoji}</div>
-                  <h3 className="text-lg font-semibold text-amber-900 mb-2">{item.name}</h3>
-                  <p className="text-sm text-amber-700 mb-3">{item.desc}</p>
+                  <h3 className="text-lg font-semibold text-krumb-900 mb-2">{item.name}</h3>
+                  <p className="text-sm text-krumb-700 mb-3">{item.desc}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-amber-600">{item.price}</span>
-                    <button className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-amber-700 transition-colors">
+                    <span className="text-xl font-bold text-krumb-600">{item.price}</span>
+                    <button className="bg-krumb-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-krumb-700 transition-colors">
                       Add
                     </button>
                   </div>
@@ -222,8 +235,21 @@ function HomeContent() {
       <footer id="contact" className="py-12 px-6 bg-amber-900 text-white">
         <div className="max-w-6xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">K</span>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+              <img 
+                src="/images/KrumbKraft_Logo-01-min.png" 
+                alt="KrumbKraft Logo" 
+                className="w-10 h-10 object-contain rounded-lg"
+                onError={(e) => {
+                  // Fallback to text if logo fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<span class="text-amber-600 font-bold">K</span>';
+                  }
+                }}
+              />
             </div>
             <span className="text-xl font-bold">KrumbKraft</span>
           </div>

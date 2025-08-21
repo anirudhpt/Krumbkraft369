@@ -11,17 +11,17 @@ export default {
       colors: {
         // KrumbKraft Brand Colors - Warm, Artisanal Bakery Theme
         krumb: {
-          50: '#fef7ed',
-          100: '#fdecd4',
-          200: '#fad5a8',
-          300: '#f6b871',
-          400: '#f19338',
-          500: '#ee7724', // Primary brand color - warm orange
-          600: '#df5f1a',
-          700: '#b84818',
-          800: '#933a1c',
-          900: '#77311a',
-          950: '#41170c',
+          50: '#fef7f7',
+          100: '#fdeaea',
+          200: '#fad5d5',
+          300: '#f5b5b5',
+          400: '#e88888',
+          500: '#AA5453', // Primary brand color - muted red
+          600: '#954745',
+          700: '#7a3b3a',
+          800: '#653030',
+          900: '#542828',
+          950: '#2e1616',
         },
         sourdough: {
           50: '#f8f6f2',

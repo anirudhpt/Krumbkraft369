@@ -35,7 +35,22 @@ export default function TopNavBar({
                 ←
               </button>
             )}
-            <div className="text-2xl">🍽️</div>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow">
+              <img 
+                src="/images/KrumbKraft_Logo-01-min.png" 
+                alt="KrumbKraft Logo" 
+                className="w-10 h-10 object-contain rounded-lg"
+                onError={(e) => {
+                  // Fallback to emoji if logo fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<span class="text-xl">🍽️</span>';
+                  }
+                }}
+              />
+            </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">{title}</h1>
               {subtitle && (

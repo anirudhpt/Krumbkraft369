@@ -10,14 +10,14 @@
 }
 
 :root {
-  --background: linear-gradient(135deg, #FEF3E2 0%, #FED7AA 30%, #FDBA74 70%, #FB923C 100%);
-  --foreground: #92400E;
+  --background: linear-gradient(135deg, #fef7f7 0%, #fdeaea 30%, #fad5d5 70%, #e88888 100%);
+  --foreground: #542828;
   --glass-bg: rgba(255, 255, 255, 0.25);
-  --glass-border: rgba(217, 119, 6, 0.15);
-  --warm-brown: #D97706;
-  --fresh-brown: #EA580C;
-  --light-brown: #F59E0B;
-  --bread-texture: linear-gradient(135deg, #FED7AA 0%, #FDBA74 25%, #FB923C 50%, #F97316 75%, #EA580C 100%);
+  --glass-border: rgba(170, 84, 83, 0.15);
+  --warm-brown: #AA5453;
+  --fresh-brown: #954745;
+  --light-brown: #e88888;
+  --bread-texture: linear-gradient(135deg, #fdeaea 0%, #fad5d5 25%, #e88888 50%, #AA5453 75%, #954745 100%);
 }
 
 /* Enhanced Glassmorphism effects */

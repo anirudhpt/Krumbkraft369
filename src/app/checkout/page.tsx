@@ -589,7 +589,7 @@ Please confirm this order. Thank you!`;
             ))}
             <div className="flex justify-between items-center pt-4 border-t border-gray-200">
               <span className="text-lg font-bold text-gray-800">Total</span>
-              <span className="text-lg font-bold text-amber-600">₹{getTotalAmount()}</span>
+              <span className="text-lg font-bold text-krumb-600">₹{getTotalAmount()}</span>
             </div>
           </div>
         </div>

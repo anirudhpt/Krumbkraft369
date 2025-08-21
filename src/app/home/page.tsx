@@ -210,10 +210,10 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-2xl"></div>
           
           <div className="relative z-10 flex flex-col items-center space-y-6">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center animate-pulse shadow-xl bg-gradient-to-br from-amber-600 to-orange-700">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center animate-pulse shadow-xl bg-gradient-to-br from-krumb-600 to-krumb-700">
               <span className="text-xl sm:text-2xl font-bold text-white">K</span>
             </div>
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-gray-200 border-t-amber-600"></div>
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-gray-200 border-t-krumb-600"></div>
             <p className="font-semibold text-base sm:text-lg text-center text-gray-700">Loading fresh menu...</p>
           </div>
         </div>
@@ -230,7 +230,7 @@ export default function HomePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white relative overflow-hidden">
         {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-50/30 via-white to-orange-50/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-krumb-50/30 via-white to-krumb-100/20"></div>
         
         <div className="w-full max-w-md mx-4 relative">
           {/* Glassmorphism container */}
@@ -239,7 +239,7 @@ export default function HomePage() {
           <div className="relative z-10 p-8 sm:p-10">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-xl bg-gradient-to-br from-amber-600 to-orange-700">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center shadow-xl bg-gradient-to-br from-krumb-600 to-krumb-700">
                 <span className="text-2xl font-bold text-white">K</span>
               </div>
               <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome to KrumbKraft</h1>
@@ -259,7 +259,7 @@ export default function HomePage() {
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   onKeyPress={handlePhoneKeyPress}
                   placeholder="Enter 10-digit phone number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors bg-white/80 backdrop-blur-sm"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-krumb-500 focus:border-krumb-500 transition-colors bg-white/80 backdrop-blur-sm"
                   disabled={phoneLoading}
                 />
                 {phoneError && (
@@ -270,7 +270,7 @@ export default function HomePage() {
               <button
                 onClick={handlePhoneSubmit}
                 disabled={phoneLoading}
-                className="w-full bg-gradient-to-r from-amber-600 to-orange-700 text-white py-3 px-4 rounded-xl font-medium hover:from-amber-700 hover:to-orange-800 focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-krumb-600 to-krumb-700 text-white py-3 px-4 rounded-xl font-medium hover:from-krumb-700 hover:to-krumb-800 focus:ring-2 focus:ring-krumb-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {phoneLoading ? (
                   <div className="flex items-center justify-center">
@@ -327,20 +327,38 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 relative z-10">
           <div className="flex justify-between items-center animate-fadeInLeft">
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center shadow-xl bg-gradient-to-br from-amber-600 to-orange-700">
-                <span className="text-lg sm:text-xl font-bold text-white">K</span>
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-                  KrumbKraft
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600">Welcome back, {user?.name}!</p>
-              </div>
-              <div className="block sm:hidden">
-                <h1 className="text-lg font-bold text-gray-800">
-                  KrumbKraft
-                </h1>
-                <p className="text-xs truncate max-w-[120px] text-gray-600">Hi, {user?.name}!</p>
+              {/* KrumbKraft Logo */}
+              <div className="flex items-center space-x-2">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shadow-xl relative overflow-hidden">
+                  {/* Your actual KrumbKraft logo */}
+                  <img 
+                    src="/images/KrumbKraft_Logo-01-min.png" 
+                    alt="KrumbKraft Logo" 
+                    className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-2xl"
+                    onError={(e) => {
+                      // Fallback to emoji if logo fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = '<span class="text-lg sm:text-xl">🥖</span>';
+                      }
+                    }}
+                  />
+                </div>
+                {/* Logo text */}
+                <div className="hidden sm:block">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
+                    KrumbKraft
+                  </h1>
+                  <p className="text-xs sm:text-sm text-gray-600">Welcome back, {user?.name}!</p>
+                </div>
+                <div className="block sm:hidden">
+                  <h1 className="text-lg font-bold text-gray-800 tracking-tight">
+                    KrumbKraft
+                  </h1>
+                  <p className="text-xs truncate max-w-[120px] text-gray-600">Hi, {user?.name}!</p>
+                </div>
               </div>
             </div>
             
@@ -348,7 +366,16 @@ export default function HomePage() {
               {/* Premium Cart Button with glassmorphism */}
               <button
                 onClick={() => setShowCart(true)}
-                className="group/nav relative text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center space-x-1.5 sm:space-x-2 overflow-hidden bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-700 hover:to-orange-800 shadow-xl hover:shadow-2xl"
+                className="group/nav relative text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center space-x-1.5 sm:space-x-2 overflow-hidden shadow-xl hover:shadow-2xl"
+                style={{
+                  background: 'linear-gradient(to right, #AA5453, #954745)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(to right, #954745, #7a3b3a)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(to right, #AA5453, #954745)';
+                }}
               >
                 {/* Elegant shimmer effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/nav:translate-x-[100%] transition-transform duration-700"></div>
@@ -390,7 +417,7 @@ export default function HomePage() {
                   }}
                   className={`flex-shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-300 ${
                     activeSection === category
-                      ? 'text-amber-700 border-b-2 border-amber-500'
+                      ? 'text-krumb-700 border-b-2 border-krumb-500'
                       : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
@@ -415,7 +442,7 @@ export default function HomePage() {
                 }}
                 className={`text-sm font-medium transition-colors duration-300 ${
                   activeSection === category
-                    ? 'text-amber-700 border-b-2 border-amber-500'
+                    ? 'text-krumb-700 border-b-2 border-krumb-500'
                     : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
@@ -442,7 +469,7 @@ export default function HomePage() {
                     {category}
                   </h2>
                   <div className="flex justify-center sm:justify-start">
-                    <div className="w-16 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 rounded-full transform scale-x-0 animate-scaleX shadow-sm"></div>
+                    <div className="w-16 h-1 rounded-full transform scale-x-0 animate-scaleX shadow-sm" style={{background: 'linear-gradient(to right, #e88888, #AA5453, #954745)'}}></div>
                   </div>
                 </div>
                 
@@ -465,7 +492,16 @@ export default function HomePage() {
           {/* Premium Show More Button */}
           <div className="flex justify-center mt-8 mb-6">
             <button 
-              className="group/more text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-300 relative overflow-hidden bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-700 hover:to-orange-800 shadow-xl hover:shadow-2xl hover:transform hover:scale-105"
+              className="group/more text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-300 relative overflow-hidden shadow-xl hover:shadow-2xl hover:transform hover:scale-105"
+              style={{
+                background: 'linear-gradient(to right, #AA5453, #954745)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(to right, #954745, #7a3b3a)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(to right, #AA5453, #954745)';
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/more:translate-x-[100%] transition-transform duration-700"></div>
               <span className="relative z-10 flex items-center space-x-2">
@@ -492,7 +528,7 @@ export default function HomePage() {
             <div className="relative z-10">
               <div className="p-4 sm:p-6 relative overflow-hidden rounded-t-3xl sm:rounded-t-3xl">
                 {/* Header background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-700"></div>
+                <div className="absolute inset-0" style={{background: 'linear-gradient(to right, #AA5453, #954745)'}}></div>
                 
                 <div className="flex justify-between items-center relative z-10">
                   <h3 className="text-xl sm:text-2xl font-bold text-white">
@@ -561,7 +597,7 @@ export default function HomePage() {
                   
                   <div className="relative z-10">
                     <div className="flex justify-between items-center mb-3 sm:mb-4">
-                      <span className="text-xl sm:text-2xl font-bold text-amber-900">Total: ₹{getTotalAmount()}</span>
+                      <span className="text-xl sm:text-2xl font-bold" style={{color: '#542828'}}>Total: ₹{getTotalAmount()}</span>
                     </div>
                     <button
                       onClick={proceedToCheckout}
@@ -666,7 +702,7 @@ function MenuItemCard({
     <div className="h-auto flex flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:transform hover:scale-105 shadow-lg hover:shadow-xl relative group bg-white">
       <div className="relative z-10 flex flex-col h-full">
         {/* Product Image Section - Nike Style */}
-        <div className="relative overflow-hidden rounded-t-2xl h-48 sm:h-52 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500">
+        <div className="relative overflow-hidden rounded-t-2xl h-48 sm:h-52 bg-gradient-to-br from-krumb-400 via-krumb-500 to-krumb-600">
           <img 
             src={getPlaceholderImage(item)}
             alt={item.productName}
@@ -692,10 +728,10 @@ function MenuItemCard({
         
         {/* Product Info */}
         <div className="text-center p-2 flex-shrink-0">
-          <h3 className="font-bold text-xs sm:text-sm mb-1 line-clamp-1 text-amber-900">
+          <h3 className="font-bold text-xs sm:text-sm mb-1 line-clamp-1" style={{color: '#542828'}}>
             {item.productName}
           </h3>
-          <p className="text-xs line-clamp-1 text-amber-700">
+          <p className="text-xs line-clamp-1" style={{color: '#7a3b3a'}}>
             {item.category}
           </p>
         </div>
@@ -714,17 +750,25 @@ function MenuItemCard({
                     onChange={() => setSelectedOption(option)}
                     className="sr-only"
                   />
-                  <span className={`inline-block text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border transition-all duration-200 ${
-                    selectedOption?.name === option.name
-                      ? 'bg-amber-600 text-white border-amber-600 shadow-md'
-                      : 'bg-white/70 text-amber-800 border-amber-300 hover:bg-amber-50'
-                  }`}>
+                  <span 
+                    className={`inline-block text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border transition-all duration-200 ${
+                      selectedOption?.name === option.name
+                        ? 'text-white shadow-md'
+                        : 'bg-white/70 text-gray-800 hover:bg-gray-50'
+                    }`}
+                    style={selectedOption?.name === option.name 
+                      ? {backgroundColor: '#AA5453', borderColor: '#AA5453'} 
+                      : {borderColor: '#AA5453'}
+                    }
+                  >
                     <span className="hidden sm:inline">{option.name.replace('100% ', '')}</span>
                     <span className="sm:hidden">{option.name.replace('100% Whole Wheat', 'WW').replace('100% ', '').replace('Whole Wheat', 'WW')}</span>
                     {option.priceAdjustment !== 0 && (
-                      <span className={`ml-0.5 sm:ml-1 font-medium text-xs ${
-                        selectedOption?.name === option.name ? 'text-amber-100' : 'text-green-600'
-                      }`}>
+                      <span 
+                        className={`ml-0.5 sm:ml-1 font-medium text-xs ${
+                          selectedOption?.name === option.name ? 'text-white/90' : 'text-green-600'
+                        }`}
+                      >
                         +₹{option.priceAdjustment}
                       </span>
                     )}
@@ -735,37 +779,42 @@ function MenuItemCard({
           </div>
         )}
         
-        {/* Quantity Counter */}
-        <div className="flex justify-between items-center p-2 mt-auto flex-shrink-0">
-          <div className="flex items-center space-x-2">
+        {/* Quantity Counter and Price */}
+        <div className="flex justify-between items-center p-2 mt-auto flex-shrink-0 gap-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <button
               onClick={handleDecrement}
               disabled={quantity === 0}
-              className={`w-8 h-8 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-sm backdrop-blur-md border ${
+              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-xs sm:text-sm backdrop-blur-md border ${
                 quantity > 0 
-                  ? 'bg-white/60 border-amber-300 text-amber-800 hover:bg-white/80 hover:scale-110 active:scale-95' 
-                  : 'bg-white/30 border-amber-200 text-amber-600 cursor-not-allowed opacity-50'
+                  ? 'bg-white/60 text-gray-800 hover:bg-white/80 hover:scale-110 active:scale-95' 
+                  : 'bg-white/30 text-gray-600 cursor-not-allowed opacity-50'
               }`}
+              style={quantity > 0 ? {borderColor: '#AA5453'} : {borderColor: '#fdeaea'}}
             >
-              -
+              −
             </button>
             
-            <span className="text-lg sm:text-base font-bold min-w-[.5rem] sm:min-w-[2rem] text-center text-amber-900">
+            <span className="text-sm sm:text-base font-bold min-w-[1.5rem] sm:min-w-[2rem] text-center" style={{color: '#542828'}}>
               {quantity}
             </span>
             
             <button
               onClick={handleIncrement}
-              className="w-8 h-8 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-sm backdrop-blur-md border border-amber-300 text-amber-800 hover:bg-white/80 hover:scale-110 active:scale-95"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full font-bold transition-all duration-200 flex items-center justify-center text-xs sm:text-sm backdrop-blur-md border bg-white/60 text-gray-800 hover:bg-white/80 hover:scale-110 active:scale-95"
+              style={{borderColor: '#AA5453'}}
             >
               +
             </button>
           </div>
           
-          <div className="relative">
-            <div className="text-sm font-bold text-amber-900 bg-gradient-to-br from-amber-50 via-white to-amber-50 px-4 py-2 rounded-xl shadow-md border border-amber-200/50 backdrop-blur-sm">
-              <span className="text-xs text-amber-600 font-medium">₹</span>
-              <span className="ml-0.5">{currentPrice}</span>
+          <div className="flex items-center">
+            <div 
+              className="text-xs sm:text-sm font-bold bg-gradient-to-br from-white via-gray-50 to-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-md backdrop-blur-sm flex items-center whitespace-nowrap"
+              style={{color: '#542828', borderColor: '#fdeaea', borderWidth: '1px'}}
+            >
+              <span className="text-xs sm:text-sm font-bold" style={{color: '#AA5453'}}>₹</span>
+              <span className="ml-0.5 font-bold">{currentPrice}</span>
             </div>
           </div>
         </div>

@@ -178,7 +178,7 @@ function NewUserForm({
       
       <div className="relative z-10 bg-white/95 backdrop-blur-sm rounded-3xl shadow-large p-8 max-w-lg w-full border border-flour-200">
         <div className="text-center mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-krumb-500 to-krumb-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <span className="text-2xl font-bold text-white">K</span>
           </div>
           <h1 className="text-2xl font-bold text-sourdough-800 mb-4">
@@ -233,7 +233,7 @@ function NewUserForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-4 px-8 rounded-2xl hover:from-amber-600 hover:to-orange-700 focus:outline-none focus:ring-4 focus:ring-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-bold text-lg"
+            className="w-full bg-gradient-to-r from-krumb-500 to-krumb-600 text-white py-4 px-8 rounded-2xl hover:from-krumb-600 hover:to-krumb-700 focus:outline-none focus:ring-4 focus:ring-krumb-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 font-bold text-lg"
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center">
